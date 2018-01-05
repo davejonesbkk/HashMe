@@ -1,27 +1,41 @@
-import hashlib
-
-import argparse 
-
-import sys
+import hashlib, argparse, uuid, os
 
 
 
+from pass_builder import PasswordHelper
+
+PH = PasswordHelper()
 
 
-def pass_input(pass_choice, h):
-
-	while len(pass_choice) <=7:
-		pass_choice = raw_input('Enter your password. It must be at least 8 characters long: ')
-
-	print('Your plain text password is ', pass_choice)
-
-	h.update(pass_choice.encode('utf-8'))
-
-	print('Your hashed password is ', h.digest())
+def pass_input(plain, h):
 
 
+	while len(plain) <=7:
+		plain = input('Enter your password. It must be at least 8 characters long: ')
+
+	print('Your plain text password is ', plain)
+
+	plain = h.digest()
+
+	salt = PH.get_salt()
+
+	hashed = plain+salt
+
+	print('Plain is ',plain)
+	print('The salt is ',salt)
+	print('The hash ',hashed)
+
+
+	validated = PH.validate_password(plain, salt, hashed)
+
+	if validated == True:
+		print('Validated')
+	else:
+		print('False')
 
 	
+
+
 
 
 def main():
@@ -33,10 +47,10 @@ def main():
 
 	h = hashlib.new(args.hash_choice)
 
-	pass_choice = ''
+	plain = ''
 
 
-	pass_input(pass_choice, h)
+	pass_input(plain, h)
 
 if __name__ == '__main__':
 	main()
