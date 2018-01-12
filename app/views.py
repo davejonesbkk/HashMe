@@ -1,47 +1,82 @@
 
 
-from flask import render_template, request 
+from flask import render_template, request, redirect, url_for
 
 from app import app 
 
+
 from flask.ext.login import login_user
+from flask.ext.login import logout_user
 
-from mockdbhelper import MockDBHelper as DBHelper
-from user import User 
+from flask.ext.login import LoginManager
+from flask.ext.login import login_required 
+
+from app.mockdbhelper import MockDBHelper as DBHelper
+from app.user import User 
+
+app.secret_key = 'ZvOSAWwgSSfQ8qsCvLI8tQHIlj7Lu6E2KkVF+/okg1nQtUhYJaq+3PAT8KI1'
 
 
+DB = DBHelper()
 
 login_manager = LoginManager()
 
 @app.route('/')
-def hello_world():
+def home():
     
     return render_template("index.html") 
 
 
-login_manager.init_app(app)
+@app.route('/account')
+@login_required 
+def account():
+	return "Logged in"
 
-
-@login_manager.user_loader 
-def load_user(user_id):
-	return User.get(user_id)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
-	form = LoginForm()
-	if form.validate_on_submit():
-		login_user(user)
+	error = None
 
-		flask.flash('Logged in')
+	try:
 
-		next = flask.request.args.get('next')
 
-		if not is_safe_url(next):
-			return flask.abort(400)
+		email = request.form.get("email")
+		password = request.form.get("password")
+		user_password = DB.get_user(email)
 
-		return flask.redirect(next or flask.url_for('index'))
-	return flask.render_template('login.html', form=form)
+		if user_password and user_password == password:
+			user = User(email)
+			login_user(user)
+			return redirect(url_for('account'))
+		else:
+			error = 'Invalid login credentials. Please try again'
+
+		return render_template("login.html")
+
+	except Exception as e:
+
+		return render_template('login.html', error = error)
+
+#Required after app object has been created otherwise will get user_loader error 
+login_manager.init_app(app)
+
+@login_manager.user_loader 
+def load_user(user_id):
+	user_password = DB.get_user(user_id)
+	if user_password:
+		return User(user_id)
+
+@app.route("/logout")
+@login_required
+def logout():
+	logout_user()
+	return redirect(url_for("home"))
+
+
+
+
+
 
 
