@@ -12,16 +12,19 @@ from flask.ext.login import LoginManager
 from flask.ext.login import login_required 
 
 from app.mockdbhelper import MockDBHelper as DBHelper
+from pass_builder import PasswordHelper
+
 from app.user import User 
 
 app.secret_key = 'ZvOSAWwgSSfQ8qsCvLI8tQHIlj7Lu6E2KkVF+/okg1nQtUhYJaq+3PAT8KI1'
 
 
 DB = DBHelper()
+PH = PasswordHelper()
 
 login_manager = LoginManager()
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
     
     return render_template("index.html") 
@@ -30,34 +33,28 @@ def home():
 @app.route('/account')
 @login_required 
 def account():
-	return "Logged in"
+	
+	return render_template('account.html')
 
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
-	error = None
 
-	try:
+	email = request.form.get("email")
+	password = request.form.get("password")
+	stored_user = DB.get_user(email)
+
+	if stored_user and PH.validate_password(password, stored_user['salt'],
+		stored_user['hashed']):
+
+		user = User(email)
+		login_user(user, remember=True)
+		return redirect(url_for('account'))
+	return home()
 
 
-		email = request.form.get("email")
-		password = request.form.get("password")
-		user_password = DB.get_user(email)
-
-		if user_password and user_password == password:
-			user = User(email)
-			login_user(user)
-			return redirect(url_for('account'))
-		else:
-			error = 'Invalid login credentials. Please try again'
-
-		return render_template("login.html")
-
-	except Exception as e:
-
-		return render_template('login.html', error = error)
 
 #Required after app object has been created otherwise will get user_loader error 
 login_manager.init_app(app)
@@ -73,6 +70,23 @@ def load_user(user_id):
 def logout():
 	logout_user()
 	return redirect(url_for("home"))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+	email = request.form.get("email")
+	pw1 = request.form.get("password")
+	pw2 = request.form.get("password2")
+
+	if not pw1 == pw2:
+		return redirect(url_for('home'))
+	if DB.get_user(email):
+		return redirect(url_for('home'))
+	salt = PH.get_salt()
+	hashed = PH.get_hash(pw1 + salt)
+	DB.add_user(email, salt, hashed)
+	return redirect(url_for('home'))
+
+
 
 
 

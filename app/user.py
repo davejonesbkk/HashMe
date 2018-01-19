@@ -6,7 +6,7 @@ class User:
 		self.email = email 
 
 	def get_id(self):
-		return self	.email 
+		return self.email 
 
 	def is_active(self):
 		return True 

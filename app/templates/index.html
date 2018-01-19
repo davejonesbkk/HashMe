@@ -4,5 +4,22 @@
 
 <h2>The Homepage</h2>
 
+<div class="container">
+      <h1>Please Register</h1>
+      <br>
+      <form action="" method="post">
+        <input type="text" placeholder="Email" name="email" value="{{
+          request.form.email }}">
+        <input type="text" placeholder="Password" name="password" value="{{
+          request.form.password }}">  
+          <input type="text" placeholder="Password" name="password2" value="{{
+          request.form.password2 }}">  
+        <input class="btn btn-default" type="submit" value="Login">
+      </form>
+     
+        <p> {{ error }} </p>
+     
+    </div>
+
 
 {% endblock %}

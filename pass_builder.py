@@ -10,7 +10,6 @@ class PasswordHelper:
 		return hashlib.sha512(plain).hexdigest()
 
 
-
 	def get_salt(self):
 		return base64.b64encode(os.urandom(20))
 
