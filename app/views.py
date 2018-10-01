@@ -5,11 +5,11 @@ from flask import render_template, request, redirect, url_for
 from app import app 
 
 
-from flask.ext.login import login_user
-from flask.ext.login import logout_user
+from flask_login import login_user
+from flask_login import logout_user
 
-from flask.ext.login import LoginManager
-from flask.ext.login import login_required 
+from flask_login import LoginManager
+from flask_login import login_required 
 
 from app.mockdbhelper import MockDBHelper as DBHelper
 from pass_builder import PasswordHelper
@@ -52,7 +52,8 @@ def login():
 		user = User(email)
 		login_user(user, remember=True)
 		return redirect(url_for('account'))
-	return home()
+	#return home()
+	return render_template('login.html')
 
 
 
