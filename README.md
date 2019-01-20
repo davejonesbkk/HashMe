@@ -2,7 +2,7 @@
 
 A basic Flask app with user creation that utlizes hashing & slating of passwords.
 
-i<h3>Installation & setup instructions</h3>
+<h3>Installation & setup instructions</h3>
 
 <b>Create a Python3 virual environment</b>
 
@@ -21,4 +21,4 @@ virtualenv -p python3 envname
 flask run
 ```
 
-<b>Then go to 127.0.0.1:5000 in your browser</b>
+<b>Then go to 127.0.0.1:5000 in your browser. Register with your email and password.</b>
