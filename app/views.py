@@ -1,6 +1,6 @@
 
 
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
 
 from app import app 
 
@@ -15,6 +15,8 @@ from app.mockdbhelper import MockDBHelper as DBHelper
 from pass_builder import PasswordHelper
 
 from app.user import User 
+
+from app.forms import RegistrationForm
 
 app.secret_key = 'ZvOSAWwgSSfQ8qsCvLI8tQHIlj7Lu6E2KkVF+/okg1nQtUhYJaq+3PAT8KI1'
 
@@ -74,18 +76,31 @@ def logout():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-	email = request.form.get("email")
-	pw1 = request.form.get("password")
-	pw2 = request.form.get("password2")
 
-	if not pw1 == pw2:
-		return redirect(url_for('home'))
-	if DB.get_user(email):
-		return redirect(url_for('home'))
-	salt = PH.get_salt()
-	hashed = PH.get_hash(pw1 + salt)
-	DB.add_user(email, salt, hashed)
-	return redirect(url_for('home'))
+	form = RegistrationForm()
+
+	if request.method == 'POST':
+		if form.validate_on_submit():
+
+			email = request.form.get("email")
+			pw1 = request.form.get("password")
+			pw2 = request.form.get("password2")
+
+			if not pw1 == pw2:
+				flash('Sorry your passwords must match, please try again')
+				return redirect(url_for('register'))
+
+			if DB.get_user(email):
+				flash('This email is already registered')
+				return redirect(url_for('register'))
+
+			salt = PH.get_salt()
+			
+			hashed = PH.get_hash(pw1 + salt)
+			DB.add_user(email, salt, hashed)
+			return redirect(url_for('register-success'))
+
+	return render_template('index.html')
 
 
 
